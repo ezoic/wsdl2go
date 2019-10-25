@@ -1112,6 +1112,7 @@ func (ge *goEncoder) writeGoTypes(w io.Writer, d *wsdl.Definitions) error {
 			ge.writeComments(&b, stname, "")
 			fmt.Fprintf(&b, "type %s %s\n\n", stname, ge.wsdl2goType(st.Restriction.Base))
 			ge.genValidator(&b, stname, st.Restriction)
+			ge.genSetter(&b, stname, st.Restriction)
 		} else if st.Union != nil {
 			types := strings.Split(st.Union.MemberTypes, " ")
 			ntypes := make([]string, len(types))
@@ -1257,6 +1258,36 @@ func (ge *goEncoder) genValidator(w io.Writer, typeName string, r *wsdl.Restrict
 		typeName,
 		t,
 		args,
+	})
+}
+
+var setterT = template.Must(template.New("setter").Parse(`
+// Set sets {{.TypeName}}.
+func (v *{{.TypeName}}) Set(s {{.Type}}) bool {
+	*v = {{.TypeName}}(s)
+	return v.Validate()
+}
+
+// New{{.TypeName}} returns a pointer to {{.TypeName}} with value of string.
+func New{{.TypeName}} (s {{.Type}}) *{{.TypeName}} {
+	v := new({{.TypeName}})
+	v.Set(s)
+	return v
+}
+`))
+
+func (ge *goEncoder) genSetter(w io.Writer, typeName string, r *wsdl.Restriction) {
+	if len(r.Enum) == 0 {
+		return
+	}
+	t := ge.wsdl2goType(r.Base)
+	ge.needsStdPkg["reflect"] = true
+	setterT.Execute(w, &struct {
+		TypeName string
+		Type     string
+	}{
+		typeName,
+		t,
 	})
 }
 
