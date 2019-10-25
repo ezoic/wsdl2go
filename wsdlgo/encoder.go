@@ -46,6 +46,14 @@ type Encoder interface {
 	// SetLocalNamespace allows overriding of the Namespace in XMLName instead
 	// of the one specified in wsdl
 	SetLocalNamespace(namespace string)
+
+	// SetAllowDateType can enable or disable the generation of the default
+	// Date type
+	SetAllowDateType(allowDateType bool)
+
+	// SetAllowDateTimeType can enable or disable the generation of the default
+	// DateTime type
+	SetAllowDateTimeType(allowDateType bool)
 }
 
 type goEncoder struct {
@@ -75,6 +83,10 @@ type goEncoder struct {
 	// soap operations cache
 	soapOps map[string]*wsdl.BindingOperation
 
+	// override supporting types
+	allowDateType     bool
+	allowDateTimeType bool
+
 	// whether to add supporting types
 	needsDateType     bool
 	needsTimeType     bool
@@ -93,19 +105,28 @@ type goEncoder struct {
 // NewEncoder creates and initializes an Encoder that generates code to w.
 func NewEncoder(w io.Writer) Encoder {
 	return &goEncoder{
-		w:               w,
-		http:            http.DefaultClient,
-		stypes:          make(map[string]*wsdl.SimpleType),
-		ctypes:          make(map[string]*wsdl.ComplexType),
-		elements:        make(map[string]*wsdl.Element),
-		funcs:           make(map[string]*wsdl.Operation),
-		messages:        make(map[string]*wsdl.Message),
-		soapOps:         make(map[string]*wsdl.BindingOperation),
-		needsTag:        make(map[string]string),
-		needsStdPkg:     make(map[string]bool),
-		needsExtPkg:     make(map[string]bool),
-		importedSchemas: make(map[string]bool),
+		w:                 w,
+		http:              http.DefaultClient,
+		stypes:            make(map[string]*wsdl.SimpleType),
+		ctypes:            make(map[string]*wsdl.ComplexType),
+		elements:          make(map[string]*wsdl.Element),
+		funcs:             make(map[string]*wsdl.Operation),
+		messages:          make(map[string]*wsdl.Message),
+		soapOps:           make(map[string]*wsdl.BindingOperation),
+		allowDateType:     true,
+		allowDateTimeType: true,
+		needsTag:          make(map[string]string),
+		needsStdPkg:       make(map[string]bool),
+		needsExtPkg:       make(map[string]bool),
+		importedSchemas:   make(map[string]bool),
 	}
+}
+
+func (ge *goEncoder) SetAllowDateType(allowDateType bool) {
+	ge.allowDateType = allowDateType
+}
+func (ge *goEncoder) SetAllowDateTimeType(allowDateTimeType bool) {
+	ge.allowDateTimeType = allowDateTimeType
 }
 
 func (ge *goEncoder) SetPackageName(name fmt.Stringer) {
@@ -1010,7 +1031,9 @@ func (ge *goEncoder) wsdl2goType(t string) string {
 	case "string", "anyuri", "token", "nmtoken", "qname", "language", "id":
 		return "string"
 	case "date":
-		ge.needsDateType = true
+		if ge.allowDateType {
+			ge.needsDateType = true
+		}
 		return "Date"
 	case "time":
 		ge.needsTimeType = true
@@ -1024,7 +1047,9 @@ func (ge *goEncoder) wsdl2goType(t string) string {
 	case "unsignedint":
 		return "uint"
 	case "datetime":
-		ge.needsDateTimeType = true
+		if ge.allowDateTimeType {
+			ge.needsDateTimeType = true
+		}
 		return "DateTime"
 	case "duration":
 		ge.needsDurationType = true
@@ -1199,7 +1224,7 @@ func (ge *goEncoder) genDateTypes(w io.Writer) {
 var validatorT = template.Must(template.New("validator").Parse(`
 // Validate validates {{.TypeName}}.
 func (v {{.TypeName}}) Validate() bool {
-	for _, vv := range []{{.Type}} {
+	for _, vv := range []{{.TypeName}} {
 		{{range .Args}}{{.}},{{"\n"}}{{end}}
 	}{
 		if reflect.DeepEqual(v, vv) {
@@ -1403,6 +1428,10 @@ func (ge *goEncoder) genOpStructMessage(w io.Writer, d *wsdl.Definitions, name s
 	}
 
 	for _, part := range message.Parts {
+		partXMLName := part.XMLName
+		if ge.localNamespace != "" {
+			partXMLName.Space = ge.localNamespace
+		}
 		wsdlType := part.Type
 
 		// Probably soap12
@@ -1423,11 +1452,11 @@ func (ge *goEncoder) genOpStructMessage(w io.Writer, d *wsdl.Definitions, name s
 		}
 
 		ge.genElementField(w, &wsdl.Element{
-			XMLName: part.XMLName,
+			XMLName: partXMLName,
 			Name:    partName,
 			Type:    wsdlType,
 			// TODO: Maybe one could make guesses about nillable?
-		})
+		}, true)
 	}
 
 	fmt.Fprintf(w, "}\n\n")
@@ -1478,7 +1507,7 @@ func (ge *goEncoder) genComplexContent(w io.Writer, d *wsdl.Definitions, ct *wsd
 			}
 		}
 		for _, v := range seq.Elements {
-			ge.genElementField(w, v)
+			ge.genElementField(w, v, false)
 		}
 
 	}
@@ -1503,7 +1532,7 @@ func (ge *goEncoder) genSimpleContent(w io.Writer, d *wsdl.Definitions, ct *wsdl
 			ge.genElementField(w, &wsdl.Element{
 				Type: trimns(ext.Base),
 				Name: "Content",
-			})
+			}, false)
 		}
 	}
 
@@ -1517,21 +1546,21 @@ func (ge *goEncoder) genSimpleContent(w io.Writer, d *wsdl.Definitions, ct *wsdl
 
 func (ge *goEncoder) genElements(w io.Writer, ct *wsdl.ComplexType) error {
 	for _, el := range ct.AllElements {
-		ge.genElementField(w, el)
+		ge.genElementField(w, el, false)
 	}
 	if ct.Sequence != nil {
 		for _, el := range ct.Sequence.Elements {
-			ge.genElementField(w, el)
+			ge.genElementField(w, el, false)
 		}
 		for _, choice := range ct.Sequence.Choices {
 			for _, el := range choice.Elements {
-				ge.genElementField(w, el)
+				ge.genElementField(w, el, false)
 			}
 		}
 	}
 	if ct.Choice != nil {
 		for _, el := range ct.Choice.Elements {
-			ge.genElementField(w, el)
+			ge.genElementField(w, el, false)
 		}
 	}
 	for _, attr := range ct.Attributes {
@@ -1540,7 +1569,7 @@ func (ge *goEncoder) genElements(w io.Writer, ct *wsdl.ComplexType) error {
 	return nil
 }
 
-func (ge *goEncoder) genElementField(w io.Writer, el *wsdl.Element) {
+func (ge *goEncoder) genElementField(w io.Writer, el *wsdl.Element, addNamespace bool) {
 	if el.Ref != "" {
 		ref := trimns(el.Ref)
 		nel, ok := ge.elements[ref]
@@ -1581,17 +1610,24 @@ func (ge *goEncoder) genElementField(w io.Writer, el *wsdl.Element) {
 	if et == "" {
 		et = "string"
 	}
+	xmlTag := el.Name
+	if addNamespace == true && el.XMLName.Space != "" {
+		xmlTag = el.XMLName.Space + " " + el.Name
+	}
 	tag := el.Name
 	fmt.Fprintf(w, "%s ", goSymbol(el.Name))
 	if el.Max != "" && el.Max != "1" {
 		fmt.Fprintf(w, "[]")
 		if slicetype != "" {
+			xmlTag = el.Name + ">" + slicetype
 			tag = el.Name + ">" + slicetype
 		}
 	}
 	typ := ge.wsdl2goType(et)
 	if el.Nillable || el.Min == 0 {
+		xmlTag += ",omitempty"
 		tag += ",omitempty"
+
 		//since we add omitempty tag, we should add pointer to type.
 		//thus xmlencoder can differ not-initialized fields from zero-initialized values
 		if !strings.HasPrefix(typ, "*") {
@@ -1599,7 +1635,7 @@ func (ge *goEncoder) genElementField(w io.Writer, el *wsdl.Element) {
 		}
 	}
 	fmt.Fprintf(w, "%s `xml:\"%s\" json:\"%s\" yaml:\"%s\"`\n",
-		typ, tag, tag, tag)
+		typ, xmlTag, tag, tag)
 }
 
 func (ge *goEncoder) genAttributeField(w io.Writer, attr *wsdl.Attribute) {

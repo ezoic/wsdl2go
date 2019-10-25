@@ -17,14 +17,16 @@ import (
 var version = "tip"
 
 type options struct {
-	Src            string
-	Dst            string
-	Package        string
-	Namespace      string
-	Insecure       bool
-	ClientCertFile string
-	ClientKeyFile  string
-	Version        bool
+	Src                 string
+	Dst                 string
+	Package             string
+	Namespace           string
+	Insecure            bool
+	ClientCertFile      string
+	ClientKeyFile       string
+	Version             bool
+	DisableDateType     bool
+	DisableDateTimeType bool
 }
 
 func main() {
@@ -38,6 +40,8 @@ func main() {
 	flag.StringVar(&opts.ClientCertFile, "cert", opts.ClientCertFile, "use client TLS cert file")
 	flag.StringVar(&opts.ClientKeyFile, "key", opts.ClientKeyFile, "use client TLS key file")
 	flag.BoolVar(&opts.Version, "version", opts.Version, "show version and exit")
+	flag.BoolVar(&opts.DisableDateType, "nodate", opts.DisableDateType, "disable generated date type")
+	flag.BoolVar(&opts.DisableDateTimeType, "nodatetime", opts.DisableDateTimeType, "disable generated datetime type")
 	flag.Parse()
 	if opts.Version {
 		fmt.Printf("wsdl2go %s\n", version)
@@ -85,6 +89,12 @@ func codegen(w io.Writer, opts options, cli *http.Client) error {
 	}
 	if opts.Namespace != "" {
 		enc.SetLocalNamespace(opts.Namespace)
+	}
+	if opts.DisableDateType {
+		enc.SetAllowDateType(false)
+	}
+	if opts.DisableDateTimeType {
+		enc.SetAllowDateTimeType(false)
 	}
 
 	return enc.Encode(d)
