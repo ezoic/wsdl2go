@@ -3,7 +3,7 @@
 package stockquotesoapbinding
 
 import (
-	"github.com/fiorix/wsdl2go/soap"
+	"github.com/ezoic/wsdl2go/soap"
 )
 
 // Namespace was auto-generated from WSDL.

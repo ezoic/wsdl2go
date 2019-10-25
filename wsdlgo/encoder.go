@@ -24,7 +24,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/fiorix/wsdl2go/wsdl"
+	"github.com/ezoic/wsdl2go/wsdl"
 	"golang.org/x/net/html/charset"
 )
 
@@ -664,7 +664,7 @@ func (ge *goEncoder) writeSOAPFunc(w io.Writer, d *wsdl.Definitions, op *wsdl.Op
 		rpcStyle = d.Binding.BindingType.Style == "rpc"
 	}
 
-	ge.needsExtPkg["github.com/fiorix/wsdl2go/soap"] = true
+	ge.needsExtPkg["github.com/ezoic/wsdl2go/soap"] = true
 
 	// inputNames describe the accessors to the input parameter names
 	inputNames := make([]string, len(in))
