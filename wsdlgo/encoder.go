@@ -1113,6 +1113,9 @@ func (ge *goEncoder) writeGoTypes(w io.Writer, d *wsdl.Definitions) error {
 			fmt.Fprintf(&b, "type %s %s\n\n", stname, ge.wsdl2goType(st.Restriction.Base))
 			ge.genValidator(&b, stname, st.Restriction)
 			ge.genSetter(&b, stname, st.Restriction)
+			if len(st.Restriction.Enum) > 0 {
+				ge.genNewer(&b, stname, ge.wsdl2goType(st.Restriction.Base))
+			}
 		} else if st.Union != nil {
 			types := strings.Split(st.Union.MemberTypes, " ")
 			ntypes := make([]string, len(types))
@@ -1267,13 +1270,6 @@ func (v *{{.TypeName}}) Set(s {{.Type}}) bool {
 	*v = {{.TypeName}}(s)
 	return v.Validate()
 }
-
-// New{{.TypeName}} returns a pointer to {{.TypeName}} with value of string.
-func New{{.TypeName}} (s {{.Type}}) *{{.TypeName}} {
-	v := new({{.TypeName}})
-	v.Set(s)
-	return v
-}
 `))
 
 func (ge *goEncoder) genSetter(w io.Writer, typeName string, r *wsdl.Restriction) {
@@ -1288,6 +1284,26 @@ func (ge *goEncoder) genSetter(w io.Writer, typeName string, r *wsdl.Restriction
 	}{
 		typeName,
 		t,
+	})
+}
+
+var newerT = template.Must(template.New("newer").Parse(`
+// New{{.TypeName}} returns a pointer to {{.TypeName}} with value of string.
+func New{{.TypeName}} (s {{.Type}}) *{{.TypeName}} {
+	v := new({{.TypeName}})
+	*v = {{.TypeName}}(s)
+	return v
+}
+`))
+
+func (ge *goEncoder) genNewer(w io.Writer, typeName, typ string) {
+	ge.needsStdPkg["reflect"] = true
+	newerT.Execute(w, &struct {
+		TypeName string
+		Type     string
+	}{
+		typeName,
+		typ,
 	})
 }
 
@@ -1366,6 +1382,7 @@ func (ge *goEncoder) genGoStruct(w io.Writer, d *wsdl.Definitions, ct *wsdl.Comp
 	ge.writeComments(w, name, ct.Doc)
 	if ct.Abstract {
 		fmt.Fprintf(w, "type %s interface{}\n\n", name)
+		ge.genNewer(w, name, "interface{}")
 		return nil
 	}
 	if ct.Sequence != nil && ct.Sequence.Any != nil {
