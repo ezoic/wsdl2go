@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"reflect"
 
+	uuid "github.com/nu7hatch/gouuid"
 	"golang.org/x/net/html/charset"
 )
 
@@ -56,6 +58,9 @@ type Client struct {
 	Config                 *http.Client         // Optional HTTP client
 	Pre                    func(*http.Request)  // Optional hook to modify outbound requests
 	Post                   func(*http.Response) // Optional hook to snoop inbound responses
+
+	LoggerCtx interface{}
+	Logger    Logger
 }
 
 // XMLTyper is an abstract interface for types that can set an XML type.
@@ -95,6 +100,8 @@ func setXMLType(v reflect.Value) {
 }
 
 func doRoundTrip(c *Client, setHeaders func(*http.Request), in, out Message) error {
+	id, _ := uuid.NewV4()
+
 	setXMLType(reflect.ValueOf(in))
 	req := &Envelope{
 		EnvelopeAttr: c.Envelope,
@@ -132,8 +139,10 @@ func doRoundTrip(c *Client, setHeaders func(*http.Request), in, out Message) err
 	if c.Pre != nil {
 		c.Pre(r)
 	}
+	c.log(c.LoggerCtx, id.String(), "request", b.String())
 	resp, err := cli.Do(r)
 	if err != nil {
+		c.log(c.LoggerCtx, id.String(), "clienterror", err.Error())
 		return err
 	}
 	defer resp.Body.Close()
@@ -144,11 +153,13 @@ func doRoundTrip(c *Client, setHeaders func(*http.Request), in, out Message) err
 		// read only the first MiB of the body in error case
 		limReader := io.LimitReader(resp.Body, 1024*1024)
 		body, _ := ioutil.ReadAll(limReader)
-		return &HTTPError{
+		err = &HTTPError{
 			StatusCode: resp.StatusCode,
 			Status:     resp.Status,
 			Msg:        string(body),
 		}
+		c.log(c.LoggerCtx, id.String(), "httperror", err.Error())
+		return err
 	}
 
 	marshalStructure := struct {
@@ -156,9 +167,27 @@ func doRoundTrip(c *Client, setHeaders func(*http.Request), in, out Message) err
 		Body    Message
 	}{Body: out}
 
-	decoder := xml.NewDecoder(resp.Body)
+	outbody := &bytes.Buffer{}
+	_, err = io.Copy(outbody, resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		c.log(c.LoggerCtx, id.String(), "httpreadbodyerror", err.Error())
+		return err
+	}
+	c.log(c.LoggerCtx, id.String(), "response", outbody.String())
+
+	decoder := xml.NewDecoder(outbody)
 	decoder.CharsetReader = charset.NewReaderLabel
 	return decoder.Decode(&marshalStructure)
+}
+
+func (c *Client) log(ctx interface{}, uuid string, messageType string, message string) {
+	if c.Logger != nil {
+		err := c.Logger.LogRequest(ctx, uuid, messageType, message)
+		if err != nil {
+			log.Printf("cannot log dfp request: %s", err.Error())
+		}
+	}
 }
 
 // RoundTrip implements the RoundTripper interface.
