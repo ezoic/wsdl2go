@@ -1417,7 +1417,12 @@ func (ge *goEncoder) getInheritedTypes(ct *wsdl.ComplexType) []*wsdl.ComplexType
 	for _, ict := range ge.ctypes {
 		if ict.ComplexContent != nil && ict.ComplexContent.Extension != nil {
 			if trimns(ict.ComplexContent.Extension.Base) == trimns(ct.Name) {
-				ctType = append(ctType, ict)
+				idx := sort.Search(len(ctType), func(i int) bool {
+					return strings.Compare(trimns(ict.Name), trimns(ctType[i].Name)) <= 0
+				})
+				ctType = append(ctType, nil)
+				copy(ctType[idx+1:], ctType[idx:])
+				ctType[idx] = ict
 			}
 		}
 	}
