@@ -101,13 +101,13 @@ type GetDataResp struct {
 // Operation wrapper for GetData.
 // OperationGetDataReq was auto-generated from WSDL.
 type OperationGetDataReq struct {
-	GetData *GetData `xml:"getData,omitempty" json:"getData,omitempty" yaml:"getData,omitempty"`
+	GetData *GetData `xml:"http://schemas.xmlsoap.org/wsdl/ getData,omitempty" json:"getData,omitempty" yaml:"getData,omitempty"`
 }
 
 // Operation wrapper for GetData.
 // OperationGetDataResp was auto-generated from WSDL.
 type OperationGetDataResp struct {
-	GetDataResp *GetDataResp `xml:"getDataResp,omitempty" json:"getDataResp,omitempty" yaml:"getDataResp,omitempty"`
+	GetDataResp *GetDataResp `xml:"http://schemas.xmlsoap.org/wsdl/ getDataResp,omitempty" json:"getDataResp,omitempty" yaml:"getDataResp,omitempty"`
 }
 
 // dataEndpointPortType implements the DataEndpointPortType interface.

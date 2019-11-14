@@ -49,7 +49,7 @@ var EncoderCases = []struct {
 	{F: "w3example2.wsdl", G: "w3example2.golden", E: nil},
 	{F: "soap12wcf.wsdl", G: "soap12wcf.golden", E: nil},
 	{F: "memcache.wsdl", G: "memcache.golden", E: nil},
-	{F: "importer.wsdl", G: "memcache.golden", E: nil},
+	{F: "importer.wsdl", G: "memcache2.golden", E: nil},
 	{F: "data.wsdl", G: "data.golden", E: nil},
 	{F: "data_withkeyword.wsdl", G: "data_withkeyword.golden", E: nil},
 	{F: "localimport.wsdl", G: "localimport.golden", E: nil},

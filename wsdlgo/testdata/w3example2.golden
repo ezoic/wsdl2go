@@ -58,37 +58,37 @@ type TradePriceRequest struct {
 // Operation wrapper for DestroySession.
 // OperationDestroySessionInput was auto-generated from WSDL.
 type OperationDestroySessionInput struct {
-	DestroySessionRequest *DestroySessionRequest `xml:"DestroySessionRequest,omitempty" json:"DestroySessionRequest,omitempty" yaml:"DestroySessionRequest,omitempty"`
+	DestroySessionRequest *DestroySessionRequest `xml:"http://schemas.xmlsoap.org/wsdl/ DestroySessionRequest,omitempty" json:"DestroySessionRequest,omitempty" yaml:"DestroySessionRequest,omitempty"`
 }
 
 // Operation wrapper for DestroySession.
 // OperationDestroySessionOutput was auto-generated from WSDL.
 type OperationDestroySessionOutput struct {
-	DestroySessionResponse *DestroySessionResponse `xml:"DestroySessionResponse,omitempty" json:"DestroySessionResponse,omitempty" yaml:"DestroySessionResponse,omitempty"`
+	DestroySessionResponse *DestroySessionResponse `xml:"http://schemas.xmlsoap.org/wsdl/ DestroySessionResponse,omitempty" json:"DestroySessionResponse,omitempty" yaml:"DestroySessionResponse,omitempty"`
 }
 
 // Operation wrapper for GetLastTradePrice.
 // OperationGetLastTradePriceInput was auto-generated from WSDL.
 type OperationGetLastTradePriceInput struct {
-	TradePriceRequest *TradePriceRequest `xml:"TradePriceRequest,omitempty" json:"TradePriceRequest,omitempty" yaml:"TradePriceRequest,omitempty"`
+	TradePriceRequest *TradePriceRequest `xml:"http://schemas.xmlsoap.org/wsdl/ TradePriceRequest,omitempty" json:"TradePriceRequest,omitempty" yaml:"TradePriceRequest,omitempty"`
 }
 
 // Operation wrapper for GetLastTradePrice.
 // OperationGetLastTradePriceOutput was auto-generated from WSDL.
 type OperationGetLastTradePriceOutput struct {
-	TradePrice *TradePrice `xml:"TradePrice,omitempty" json:"TradePrice,omitempty" yaml:"TradePrice,omitempty"`
+	TradePrice *TradePrice `xml:"http://schemas.xmlsoap.org/wsdl/ TradePrice,omitempty" json:"TradePrice,omitempty" yaml:"TradePrice,omitempty"`
 }
 
 // Operation wrapper for GetSession.
 // OperationGetSessionInput was auto-generated from WSDL.
 type OperationGetSessionInput struct {
-	GetSessionRequest *GetSessionRequest `xml:"GetSessionRequest,omitempty" json:"GetSessionRequest,omitempty" yaml:"GetSessionRequest,omitempty"`
+	GetSessionRequest *GetSessionRequest `xml:"http://schemas.xmlsoap.org/wsdl/ GetSessionRequest,omitempty" json:"GetSessionRequest,omitempty" yaml:"GetSessionRequest,omitempty"`
 }
 
 // Operation wrapper for GetSession.
 // OperationGetSessionOutput was auto-generated from WSDL.
 type OperationGetSessionOutput struct {
-	GetSessionResponse *GetSessionResponse `xml:"GetSessionResponse,omitempty" json:"GetSessionResponse,omitempty" yaml:"GetSessionResponse,omitempty"`
+	GetSessionResponse *GetSessionResponse `xml:"http://schemas.xmlsoap.org/wsdl/ GetSessionResponse,omitempty" json:"GetSessionResponse,omitempty" yaml:"GetSessionResponse,omitempty"`
 }
 
 // stockQuotePortType implements the StockQuotePortType interface.
