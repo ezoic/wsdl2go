@@ -1139,6 +1139,8 @@ func (ge *goEncoder) writeGoTypes(w io.Writer, d *wsdl.Definitions) error {
 			return err
 		}
 		ge.genGoXMLTypeFunction(&b, ct)
+		ge.genMarshalXMLFunction(&b, ct)
+		ge.genUnmarshalXMLFunction(&b, ct)
 	}
 
 	// Operation wrappers - mainly used for rpc, not exclusively
@@ -1329,6 +1331,55 @@ func (ge *goEncoder) genGoXMLTypeFunction(w io.Writer, ct *wsdl.ComplexType) {
 	}
 }
 
+func (ge *goEncoder) genUnmarshalXMLFunction(w io.Writer, ct *wsdl.ComplexType) {
+	if ct.Abstract {
+		inheritedTypes := ge.getInheritedTypes(ct)
+		if len(inheritedTypes) > 0 {
+			ge.needsStdPkg["encoding/xml"] = true
+			ge.writeComments(w, "", "UnmarshalXML will unmarshal xml into abstract classes")
+			fmt.Fprintf(w, "func (t *%s) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {\n", goSymbol(ct.Name))
+			fmt.Fprintf(w, "	for _, attr := range start.Attr {\n")
+			fmt.Fprintf(w, "		if attr.Name.Local == \"type\" {\n")
+			fmt.Fprintf(w, "			switch attr.Value {\n")
+			for _, it := range inheritedTypes {
+				fmt.Fprintf(w, "			case \"objtype:%s\":\n", goSymbol(it.Name))
+				fmt.Fprintf(w, "				t.%s = &%s{}\n", goSymbol(it.Name), goSymbol(it.Name))
+				// if it.ComplexContent != nil && it.ComplexContent.Extension != nil && it.TargetNamespace != "" {
+				// 	fmt.Fprintf(w, "				t.SetXMLType()\n")
+				// }
+				fmt.Fprintf(w, "				return d.DecodeElement(t.%s, &start)\n", goSymbol(it.Name))
+			}
+			fmt.Fprintf(w, "			}\n")
+			fmt.Fprintf(w, "			break\n")
+			fmt.Fprintf(w, "		}\n")
+			fmt.Fprintf(w, "	}\n")
+			fmt.Fprintf(w, "	return nil\n")
+			fmt.Fprintf(w, "}\n\n")
+		}
+	}
+}
+
+func (ge *goEncoder) genMarshalXMLFunction(w io.Writer, ct *wsdl.ComplexType) {
+	if ct.Abstract {
+		inheritedTypes := ge.getInheritedTypes(ct)
+		if len(inheritedTypes) > 0 {
+			ge.needsStdPkg["encoding/xml"] = true
+			ge.writeComments(w, "", "MarshalXML will marshal xml from abstract classes")
+			fmt.Fprintf(w, "func (t *%s) MarshalXML(d *xml.Encoder, start xml.StartElement) error {\n", goSymbol(ct.Name))
+			fmt.Fprintf(w, "	if t != nil {\n")
+			fmt.Fprintf(w, "		switch {\n")
+			for _, it := range inheritedTypes {
+				fmt.Fprintf(w, "		case t.%s != nil:\n", goSymbol(it.Name))
+				fmt.Fprintf(w, "			return d.EncodeElement(t.%s, start)\n", goSymbol(it.Name))
+			}
+			fmt.Fprintf(w, "		}\n")
+			fmt.Fprintf(w, "	}\n")
+			fmt.Fprintf(w, "	return nil\n")
+			fmt.Fprintf(w, "}\n\n")
+		}
+	}
+}
+
 // helper function to print out the XMLName
 func (ge *goEncoder) genXMLName(w io.Writer, targetNamespace string, name string) {
 	if elName, ok := ge.needsTag[name]; ok {
@@ -1361,6 +1412,18 @@ func trimns(s string) string {
 	return s
 }
 
+func (ge *goEncoder) getInheritedTypes(ct *wsdl.ComplexType) []*wsdl.ComplexType {
+	ctType := make([]*wsdl.ComplexType, 0)
+	for _, ict := range ge.ctypes {
+		if ict.ComplexContent != nil && ict.ComplexContent.Extension != nil {
+			if trimns(ict.ComplexContent.Extension.Base) == trimns(ct.Name) {
+				ctType = append(ctType, ict)
+			}
+		}
+	}
+	return ctType
+}
+
 func (ge *goEncoder) genGoStruct(w io.Writer, d *wsdl.Definitions, ct *wsdl.ComplexType) error {
 	c := 0
 	if len(ct.AllElements) == 0 {
@@ -1381,8 +1444,12 @@ func (ge *goEncoder) genGoStruct(w io.Writer, d *wsdl.Definitions, ct *wsdl.Comp
 	name := goSymbol(ct.Name)
 	ge.writeComments(w, name, ct.Doc)
 	if ct.Abstract {
-		fmt.Fprintf(w, "type %s interface{}\n\n", name)
-		ge.genNewer(w, name, "interface{}")
+		fmt.Fprintf(w, "type %s struct {\n", name)
+		for _, x := range ge.getInheritedTypes(ct) {
+			// find all the types that have this as the base
+			fmt.Fprintf(w, "    %s *%s\n", x.Name, x.Name)
+		}
+		fmt.Fprintf(w, "}\n")
 		return nil
 	}
 	if ct.Sequence != nil && ct.Sequence.Any != nil {
