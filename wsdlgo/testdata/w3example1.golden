@@ -41,14 +41,14 @@ type GetEndorsingBoarderResponse struct {
 // OperationGetEndorsingBoarderRequest was auto-generated from
 // WSDL.
 type OperationGetEndorsingBoarderRequest struct {
-	GetEndorsingBoarder *GetEndorsingBoarder `xml:"GetEndorsingBoarder,omitempty" json:"GetEndorsingBoarder,omitempty" yaml:"GetEndorsingBoarder,omitempty"`
+	GetEndorsingBoarder *GetEndorsingBoarder `xml:"http://schemas.xmlsoap.org/wsdl/ GetEndorsingBoarder,omitempty" json:"GetEndorsingBoarder,omitempty" yaml:"GetEndorsingBoarder,omitempty"`
 }
 
 // Operation wrapper for GetEndorsingBoarder.
 // OperationGetEndorsingBoarderResponse was auto-generated from
 // WSDL.
 type OperationGetEndorsingBoarderResponse struct {
-	GetEndorsingBoarderResponse *GetEndorsingBoarderResponse `xml:"GetEndorsingBoarderResponse,omitempty" json:"GetEndorsingBoarderResponse,omitempty" yaml:"GetEndorsingBoarderResponse,omitempty"`
+	GetEndorsingBoarderResponse *GetEndorsingBoarderResponse `xml:"http://schemas.xmlsoap.org/wsdl/ GetEndorsingBoarderResponse,omitempty" json:"GetEndorsingBoarderResponse,omitempty" yaml:"GetEndorsingBoarderResponse,omitempty"`
 }
 
 // getEndorsingBoarderPortType implements the GetEndorsingBoarderPortType interface.

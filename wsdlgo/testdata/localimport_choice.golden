@@ -35,13 +35,13 @@ type TradePriceRequest struct {
 // Operation wrapper for GetLastTradePrice.
 // OperationGetLastTradePriceInput was auto-generated from WSDL.
 type OperationGetLastTradePriceInput struct {
-	Body *TradePriceRequest `xml:"body,omitempty" json:"body,omitempty" yaml:"body,omitempty"`
+	Body *TradePriceRequest `xml:"http://schemas.xmlsoap.org/wsdl/ body,omitempty" json:"body,omitempty" yaml:"body,omitempty"`
 }
 
 // Operation wrapper for GetLastTradePrice.
 // OperationGetLastTradePriceOutput was auto-generated from WSDL.
 type OperationGetLastTradePriceOutput struct {
-	TradePrice *TradePrice `xml:"TradePrice,omitempty" json:"TradePrice,omitempty" yaml:"TradePrice,omitempty"`
+	TradePrice *TradePrice `xml:"http://schemas.xmlsoap.org/wsdl/ TradePrice,omitempty" json:"TradePrice,omitempty" yaml:"TradePrice,omitempty"`
 }
 
 // stockQuotePortType implements the StockQuotePortType interface.

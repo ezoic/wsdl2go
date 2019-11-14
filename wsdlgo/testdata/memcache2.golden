@@ -56,37 +56,37 @@ type GetMultiRequest struct {
 // Operation wrapper for Get.
 // OperationGetRequest was auto-generated from WSDL.
 type OperationGetRequest struct {
-	Key *string `xml:"http://schemas.xmlsoap.org/wsdl/ key,omitempty" json:"key,omitempty" yaml:"key,omitempty"`
+	Key *string `xml:"key,omitempty" json:"key,omitempty" yaml:"key,omitempty"`
 }
 
 // Operation wrapper for Get.
 // OperationGetResponse was auto-generated from WSDL.
 type OperationGetResponse struct {
-	Resp *GetResponse `xml:"http://schemas.xmlsoap.org/wsdl/ resp,omitempty" json:"resp,omitempty" yaml:"resp,omitempty"`
+	Resp *GetResponse `xml:"resp,omitempty" json:"resp,omitempty" yaml:"resp,omitempty"`
 }
 
 // Operation wrapper for GetMulti.
 // OperationGetMultiRequest was auto-generated from WSDL.
 type OperationGetMultiRequest struct {
-	Keys *GetMultiRequest `xml:"http://schemas.xmlsoap.org/wsdl/ keys,omitempty" json:"keys,omitempty" yaml:"keys,omitempty"`
+	Keys *GetMultiRequest `xml:"keys,omitempty" json:"keys,omitempty" yaml:"keys,omitempty"`
 }
 
 // Operation wrapper for GetMulti.
 // OperationGetMultiResponse was auto-generated from WSDL.
 type OperationGetMultiResponse struct {
-	Values *GetMultiResponse `xml:"http://schemas.xmlsoap.org/wsdl/ values,omitempty" json:"values,omitempty" yaml:"values,omitempty"`
+	Values *GetMultiResponse `xml:"values,omitempty" json:"values,omitempty" yaml:"values,omitempty"`
 }
 
 // Operation wrapper for Set.
 // OperationSetRequest was auto-generated from WSDL.
 type OperationSetRequest struct {
-	Info *SetRequest `xml:"http://schemas.xmlsoap.org/wsdl/ info,omitempty" json:"info,omitempty" yaml:"info,omitempty"`
+	Info *SetRequest `xml:"info,omitempty" json:"info,omitempty" yaml:"info,omitempty"`
 }
 
 // Operation wrapper for Set.
 // OperationSetResponse was auto-generated from WSDL.
 type OperationSetResponse struct {
-	Ok *bool `xml:"http://schemas.xmlsoap.org/wsdl/ ok,omitempty" json:"ok,omitempty" yaml:"ok,omitempty"`
+	Ok *bool `xml:"ok,omitempty" json:"ok,omitempty" yaml:"ok,omitempty"`
 }
 
 // memoryServicePortType implements the MemoryServicePortType interface.

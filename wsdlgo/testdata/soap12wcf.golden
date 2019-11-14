@@ -24,13 +24,13 @@ type Test interface {
 // Operation wrapper for HelloWorld.
 // OperationHelloWorldMessageIn was auto-generated from WSDL.
 type OperationHelloWorldMessageIn struct {
-	HelloRequest *HelloRequest `xml:"HelloRequest,omitempty" json:"HelloRequest,omitempty" yaml:"HelloRequest,omitempty"`
+	HelloRequest *HelloRequest `xml:"http://schemas.xmlsoap.org/wsdl/ HelloRequest,omitempty" json:"HelloRequest,omitempty" yaml:"HelloRequest,omitempty"`
 }
 
 // Operation wrapper for HelloWorld.
 // OperationHelloWorldMessageOut was auto-generated from WSDL.
 type OperationHelloWorldMessageOut struct {
-	HelloResponse *HelloResponse `xml:"HelloResponse,omitempty" json:"HelloResponse,omitempty" yaml:"HelloResponse,omitempty"`
+	HelloResponse *HelloResponse `xml:"http://schemas.xmlsoap.org/wsdl/ HelloResponse,omitempty" json:"HelloResponse,omitempty" yaml:"HelloResponse,omitempty"`
 }
 
 // test implements the Test interface.

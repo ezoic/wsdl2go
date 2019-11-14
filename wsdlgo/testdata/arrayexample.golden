@@ -29,13 +29,13 @@ type ArrayOfFloat struct {
 // Operation wrapper for GetTradePrices.
 // OperationGetTradePricesInput was auto-generated from WSDL.
 type OperationGetTradePricesInput struct {
-	TickerSymbol *string `xml:"tickerSymbol,omitempty" json:"tickerSymbol,omitempty" yaml:"tickerSymbol,omitempty"`
+	TickerSymbol *string `xml:"http://schemas.xmlsoap.org/wsdl/ tickerSymbol,omitempty" json:"tickerSymbol,omitempty" yaml:"tickerSymbol,omitempty"`
 }
 
 // Operation wrapper for GetTradePrices.
 // OperationGetTradePricesOutput was auto-generated from WSDL.
 type OperationGetTradePricesOutput struct {
-	Result *ArrayOfFloat `xml:"result,omitempty" json:"result,omitempty" yaml:"result,omitempty"`
+	Result *ArrayOfFloat `xml:"http://schemas.xmlsoap.org/wsdl/ result,omitempty" json:"result,omitempty" yaml:"result,omitempty"`
 }
 
 // stockQuotePortType implements the StockQuotePortType interface.
