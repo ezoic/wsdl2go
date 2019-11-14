@@ -1340,9 +1340,9 @@ func (ge *goEncoder) genUnmarshalXMLFunction(w io.Writer, ct *wsdl.ComplexType) 
 			fmt.Fprintf(w, "func (t *%s) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {\n", goSymbol(ct.Name))
 			fmt.Fprintf(w, "	for _, attr := range start.Attr {\n")
 			fmt.Fprintf(w, "		if attr.Name.Local == \"type\" {\n")
-			fmt.Fprintf(w, "			switch attr.Value {\n")
+			fmt.Fprintf(w, "			switch soap.TrimNamespace(attr.Value) {\n")
 			for _, it := range inheritedTypes {
-				fmt.Fprintf(w, "			case \"objtype:%s\":\n", goSymbol(it.Name))
+				fmt.Fprintf(w, "			case \"%s\":\n", goSymbol(it.Name))
 				fmt.Fprintf(w, "				t.%s = &%s{}\n", goSymbol(it.Name), goSymbol(it.Name))
 				// if it.ComplexContent != nil && it.ComplexContent.Extension != nil && it.TargetNamespace != "" {
 				// 	fmt.Fprintf(w, "				t.SetXMLType()\n")
