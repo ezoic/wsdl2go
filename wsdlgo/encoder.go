@@ -1413,16 +1413,25 @@ func trimns(s string) string {
 }
 
 func (ge *goEncoder) getInheritedTypes(ct *wsdl.ComplexType) []*wsdl.ComplexType {
-	ctType := make([]*wsdl.ComplexType, 0)
+	return ge._getInheritedTypes(ct, make([]*wsdl.ComplexType, 0), 0)
+}
+
+func (ge *goEncoder) _getInheritedTypes(ct *wsdl.ComplexType, ctType []*wsdl.ComplexType, depth int) []*wsdl.ComplexType {
 	for _, ict := range ge.ctypes {
 		if ict.ComplexContent != nil && ict.ComplexContent.Extension != nil {
 			if trimns(ict.ComplexContent.Extension.Base) == trimns(ct.Name) {
-				idx := sort.Search(len(ctType), func(i int) bool {
-					return strings.Compare(trimns(ict.Name), trimns(ctType[i].Name)) <= 0
-				})
-				ctType = append(ctType, nil)
-				copy(ctType[idx+1:], ctType[idx:])
-				ctType[idx] = ict
+				if ict.Abstract {
+					ctType = ge._getInheritedTypes(ict, ctType, depth+1)
+				} else {
+					idx := sort.Search(len(ctType), func(i int) bool {
+						return strings.Compare(trimns(ict.Name), trimns(ctType[i].Name)) <= 0
+					})
+					if idx >= len(ctType) || trimns(ctType[idx].Name) != trimns(ict.Name) {
+						ctType = append(ctType, nil)
+						copy(ctType[idx+1:], ctType[idx:])
+						ctType[idx] = ict
+					}
+				}
 			}
 		}
 	}
